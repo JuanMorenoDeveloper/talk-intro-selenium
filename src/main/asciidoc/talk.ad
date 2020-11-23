@@ -1,0 +1,33 @@
+= Test de UI con Selenium
+:icons: font
+:twitter-tag:
+:conference-tag:
+:talk-tag: Intro Selenium & UI Test
+:linkattrs:
+ifndef::partials[:partials: partials]
+
+include::{partials}/footer.ad[]
+
+== ¿Qué es Selenium? icon:lightbulb[]
+
+image::selenium_logo_large.png[background, size=auto]
+
+== ¿Cómo se usa?
+
+* https://www.selenium.dev/
+* https://www.selenium.dev/about/
+* https://www.selenium.dev/documentation/en/webdriver/
+* https://selenide.org/
+* https://selenide.org/quick-start.html
+
+== Ecosistema
+
+== Page Objects
+
+== Selenide
+
+image::selenide-logo-big.png[background, size=auto]
+
+== Recomendaciones
+
+include::{partials}/self.ad[]

@@ -8,26 +8,189 @@ ifndef::partials[:partials: partials]
 
 include::{partials}/footer.ad[]
 
+== !
+
+image::selenium_logo_large.png[background, size=100%]
+
 == ¿Qué es Selenium? icon:lightbulb[]
 
-image::selenium_logo_large.png[background, size=auto]
+Selenium es un entorno de pruebas de software para aplicaciones basadas en la web.
 
-== ¿Cómo se usa?
+== Componentes
 
-* https://www.selenium.dev/
-* https://www.selenium.dev/about/
-* https://www.selenium.dev/documentation/en/webdriver/
-* https://selenide.org/
-* https://selenide.org/quick-start.html
+* Selenium IDE
+* Selenium WebDriver
+* Selenium GRID
 
-== Ecosistema
+== Ejemplo
+
+[source,java]
+----
+@Test
+public void givenUserName_whenLogin_getHello() {
+  driver.findElement(By.name("user_name")).sendKeys("testUser");
+  driver.findElement(By.name("password")).sendKeys("my supersecret password");
+  driver.findElement(By.name("sign-in")).click();
+
+  driver.findElement(By.tagName("h1")).isDisplayed();
+  assertThat(driver.findElement(By.tagName("h1")).getText(), is("Hello userName"));
+}
+----
 
 == Page Objects
+
+image::page_objects.png[background, size=auto]
+
+== Page Objects
+
+Es un Patrón de Diseño, que se ha popularizado para mejorar el mantenimiento de las pruebas y reducir el código duplicado. Modela los elementos de una página como:
+
+* Propiedades
+* Métodos
+
+== Page Objects
+
+* Promueve la reutilización y reduce código duplicado
+* Hace que los tests sean más fáciles de leer (Fluent syntax)
+* Ayuda a que los tests sean más robustos
+* Mejora el mantenimiento especialmente en aplicaciones que cambian frecuentemente
+
+== Ejemplo: Sign-in page
+
+[source,java]
+----
+public class SignInPage {
+  protected static WebDriver driver;
+  private By usernameBy = By.name("user_name");
+  private By passwordBy = By.name("password");
+  private By signinBy = By.name("sign_in");
+
+  public SignInPage(WebDriver driver){
+    this.driver = driver;
+  }
+
+  public HomePage loginValidUser(String userName, String password) {
+    driver.findElement(usernameBy).sendKeys(userName);
+    driver.findElement(passwordBy).sendKeys(password);
+    driver.findElement(signinBy).click();
+    return new HomePage(driver);
+  }
+}
+----
+
+== Ejemplo: Home page
+
+[source,java]
+----
+public class HomePage {
+  protected static WebDriver driver;
+  private By messageBy = By.tagName("h1");
+
+  public HomePage(WebDriver driver){
+    this.driver = driver;
+    if (!driver.getTitle().equals("Home Page of logged in user")) {
+      throw new IllegalStateException("This is not Home Page of logged in user," +
+            " current page is: " + driver.getCurrentUrl());
+    }
+  }
+
+  public String getMessageText() {
+    return driver.findElement(messageBy).getText();
+  }
+
+  public HomePage manageProfile() {
+    return new HomePage(driver);
+  }
+}
+----
+
+== Y ahora el test
+
+[source,java]
+----
+@Test
+public void givenUserName_whenLogin_getHello() {
+  SignInPage signInPage = new SignInPage(driver);
+  HomePage homePage = signInPage.loginValidUser("userName", "password");
+  assertThat(homePage.getMessageText(), is("Hello userName"));
+}
+----
 
 == Selenide
 
 image::selenide-logo-big.png[background, size=auto]
 
-== Recomendaciones
+== Selenide
+
+Selenide es un framework para la automatización de pruebas basado en Selenium WebDriver
+
+== Beneficios de Selenide
+
+* API concisa y fluida para los tests
+* Soporte de Ajax para test robustos
+* Poderosos selectores
+* Configuración simple
+
+== Ejemplo Google Page
+
+[source,java]
+----
+public class GooglePage {
+  public void searchFor(String text) {
+    $(By.name("q")).val(text).pressEnter();
+  }
+}
+----
+
+== SearchResult Page
+
+[source,java]
+----
+public class SearchResultsPage {
+  public ElementsCollection getResults() {
+    return $$("#res .g");
+  }
+  public SelenideElement getResult(int index) {
+    return $("#res .g", index);
+  }
+}
+----
+
+== Y ahora el test
+
+[source,java]
+----
+@Test
+public void givenSelenide_whenSearch_thenGetTitlePage() {
+  open("https://google.com/ncr");
+  new GooglePage().searchFor("selenide");
+
+  SearchResultsPage results = new SearchResultsPage();
+  results.getResults().shouldHave(sizeGreaterThan(1));
+  results.getResult(0).shouldHave(text("Selenide: concise UI tests in Java"));
+}
+----
+
+== Prácticas recomendadas
+
+* No depender solo del testing de UI (Pirámide de testing)
+* Al usar selectores seguir la secuencia *id > name > css > xpath*
+* Evitar el uso de Thread.sleep() y usar Wait
+* Considerar el uso de BDD con Cucumber
+* Tomar capturas y código de las páginas / reportes
+
+== Prácticas recomendadas
+
+* Usar convención de nombrado (Clases, paquetes, métodos)
+* Acotar el número de navegadores a probar
+* Usar soft assertions para múltiples validaciones
+* Usar data-driven en vez de test repetidos
+* Mantener los tests independientes
+
+== Conclusiones Page Objects
+
+* Permite mejorar el mantenimiento y lectura del código de los tests.
+* No se duplican las llamadas a selenium
+* Genera código reutilizable
 
 include::{partials}/self.ad[]
